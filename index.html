@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Grocery Helper</title>
 
-    <!-- p5.js (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
-
-    <!-- Styles -->
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
     <main id="game-container"></main>
 
-    <!-- Your game code -->
+    <!-- Data + helpers FIRST -->
+    <script src="levels.js"></script>
+    <script src="items.js"></script>
+    <script src="ui.js"></script>
+
+    <!-- Main game loop LAST -->
     <script src="sketch.js"></script>
   </body>
 </html>
