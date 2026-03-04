@@ -1,3 +1,5 @@
+// sketch.js
+
 let gameState = "start"; // start, game, levelComplete, winAll
 
 let worldWidth = 2200;
@@ -23,6 +25,9 @@ let catTargetX = 0;
 
 // quick emoji map for cart UI
 let itemEmojiMap = {};
+
+// tracks which shelf item is hovered
+let hoveredItem = null;
 
 function setup() {
   let canvas = createCanvas(900, 500);
@@ -53,6 +58,10 @@ function draw() {
   updateCamera();
   updateCat();
 
+  // compute hovered item each frame (world coords)
+  hoveredItem = getHoveredItem();
+
+  // WORLD
   push();
   translate(-camX, 0);
 
@@ -60,25 +69,38 @@ function draw() {
   drawItemsWorld(items, camX);
   drawPlayerWorld(player);
 
-  // hint arrow if cat is active
+  // cat indicator
   if (catActive) drawCatArrowWorld();
 
-  drawHoverHintWorld(items, camX);
   pop();
 
-  // UI
+  // UI (order matters: list first, then smart hint can decide to flip above list if needed)
   drawShoppingListUI(currentLevel, collected, shoppingList);
+  drawHoverHintSmart(hoveredItem, camX);
   drawHintUI(hintsLeft);
   drawCartUI(collected, itemEmojiMap);
   drawToastUI(toastText, toastTimer);
 
-  // little aisle label
+  // aisle label
   fill(0, 0, 0, 120);
   textAlign(CENTER);
   textSize(12);
   text(aisleName, width / 2, 25);
 
   drawControlsUI();
+}
+
+// Returns the item the mouse is hovering over (or null)
+function getHoveredItem() {
+  let mx = mouseX + camX;
+  let my = mouseY;
+
+  for (let it of items) {
+    if (dist(mx, my, it.x, it.y - 18) < it.radius) {
+      return it;
+    }
+  }
+  return null;
 }
 
 function startLevel(levelNum) {
@@ -97,8 +119,15 @@ function startLevel(levelNum) {
 
   hintsLeft = cfg.hints ?? 1;
   catActive = false;
+  hoveredItem = null;
 
-  items = spawnItemsForLevel(worldWidth, shelfRows, shoppingList, cfg.itemsToShow, cfg.allowed);
+  items = spawnItemsForLevel(
+    worldWidth,
+    shelfRows,
+    shoppingList,
+    cfg.itemsToShow,
+    cfg.allowed
+  );
 
   gameState = "game";
 }
@@ -126,7 +155,6 @@ function showToast(msg) {
 }
 
 function tryPickItem(itemName) {
-  // decoy fun messages
   const funny = {
     teddy: "Bestie that’s a teddy bear 🧸 not groceries 😭",
     socks: "Socks are cute but not on the list 🧦",
@@ -160,11 +188,9 @@ function useHint() {
     return;
   }
 
-  // find a remaining shopping list item not collected
   let remaining = shoppingList.filter((n) => !collected.includes(n));
   if (remaining.length === 0) return;
 
-  // find its item on shelves
   let targetName = random(remaining);
   let target = items.find((it) => it.name === targetName);
 
@@ -183,7 +209,6 @@ function useHint() {
 function updateCat() {
   if (!catActive) return;
 
-  // if player is close, cat “arrives”
   if (abs(player.x - catTargetX) < 60) {
     catActive = false;
     showToast("🐱 Here it is! Hover + click to pick it up.");
@@ -191,7 +216,6 @@ function updateCat() {
 }
 
 function drawCatArrowWorld() {
-  // draw an arrow above player pointing toward target
   let dir = catTargetX > player.x ? 1 : -1;
   let arrowX = player.x + dir * 40;
   let arrowY = player.y - 60;
@@ -219,12 +243,17 @@ function mousePressed() {
   }
 
   // click hint button area (top-right)
-  if (mouseX > width - 190 && mouseX < width - 20 && mouseY > 40 && mouseY < 86) {
+  if (
+    mouseX > width - 190 &&
+    mouseX < width - 20 &&
+    mouseY > 40 &&
+    mouseY < 86
+  ) {
     useHint();
     return;
   }
 
-  // in-game click for items
+  // in-game click for items (world coords)
   let mx = mouseX + camX;
   let my = mouseY;
 
@@ -236,7 +265,7 @@ function mousePressed() {
   }
 }
 
-// optional keyboard shortcut: H for hint
+// state transitions
 function keyPressed() {
   if (gameState === "game" && (key === "h" || key === "H")) {
     useHint();

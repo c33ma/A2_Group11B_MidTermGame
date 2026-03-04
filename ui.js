@@ -1,5 +1,5 @@
 // ui.js
-// All drawing functions + toast + hover hint
+// Drawing functions + toast + SMART hover hint (shows over item, but flips above shopping list if blocked)
 
 function drawStartScreen() {
   textAlign(CENTER);
@@ -70,7 +70,7 @@ function drawItemsWorld(items, camX) {
   for (let it of items) {
     let hovered = dist(mx, my, it.x, it.y - 18) < it.radius;
 
-    // slot background
+    // slot background + hover glow
     if (hovered) {
       stroke(120);
       strokeWeight(3);
@@ -87,64 +87,35 @@ function drawItemsWorld(items, camX) {
   }
 }
 
-function drawHoverHintWorld(items, camX) {
-  let mx = mouseX + camX;
-  let my = mouseY;
-
-  for (let it of items) {
-    if (dist(mx, my, it.x, it.y - 18) < it.radius) {
-      let bubbleW = 240;
-      let bubbleH = 34;
-
-      fill(255);
-      stroke(160);
-      rect(mx - bubbleW / 2, my - 55, bubbleW, bubbleH, 8);
-      noStroke();
-
-      fill(0);
-      textAlign(CENTER, CENTER);
-      textSize(12);
-      text(it.hint, mx, my - 38);
-      break;
-    }
-  }
-}
-
+// Shopping list UI (semi-transparent unless hovering header)
 function drawShoppingListUI(currentLevel, collected, shoppingList) {
-  // Panel position
   const x = 20;
   const y = 20;
   const w = 240;
 
-  // Dynamic sizing
-  const headerH = 78;     // space for "Level" + "Shopping List"
-  const lineH = 20;       // each list line height
+  const headerH = 78;
+  const lineH = 20;
   const paddingBottom = 16;
-
   const h = headerH + shoppingList.length * lineH + paddingBottom;
 
-  // Hover detection (screen coords)
-  const isHover =
+  const headerHoverH = 60;
+  const isHoverHeader =
     mouseX >= x && mouseX <= x + w &&
-    mouseY >= y && mouseY <= y + h;
+    mouseY >= y && mouseY <= y + headerHoverH;
 
-  // Semi-transparent by default, solid on hover
-  const alpha = isHover ? 255 : 180;
+  const alpha = isHoverHeader ? 255 : 180;
 
-  // Panel background
   fill(255, 255, 255, alpha);
   stroke(200, 200, 200, alpha);
   rect(x, y, w, h, 12);
   noStroke();
 
-  // Text
   fill(0);
   textAlign(LEFT);
   textSize(16);
   text(`Level ${currentLevel} / 6`, x + 15, y + 25);
   text("Shopping List", x + 15, y + 48);
 
-  // List items
   for (let i = 0; i < shoppingList.length; i++) {
     const item = shoppingList[i];
     const rowY = y + headerH + i * lineH - 4;
@@ -157,6 +128,58 @@ function drawShoppingListUI(currentLevel, collected, shoppingList) {
       text("- " + item, x + 15, rowY);
     }
   }
+}
+
+function drawHoverHintSmart(hoveredItem, camX) {
+  if (!hoveredItem) return;
+
+  const padding = 12;
+
+  const label = `${hoveredItem.emoji} ${hoveredItem.name} — ${hoveredItem.hint}`;
+
+  textSize(13);
+  const bubbleW = min(420, textWidth(label) + 24);
+  const bubbleH = 30;
+
+  // FOLLOW CURSOR like before
+  let bx = mouseX + 14;
+  let by = mouseY - bubbleH - 10;
+
+  // shopping list bounds
+  const listX = 20;
+  const listY = 20;
+  const listW = 240;
+
+  const headerH = 78;
+  const lineH = 20;
+  const paddingBottom = 16;
+  const listH = headerH + shoppingList.length * lineH + paddingBottom;
+
+  // check overlap with shopping list
+  const overlapsList =
+    bx < listX + listW &&
+    bx + bubbleW > listX &&
+    by < listY + listH &&
+    by + bubbleH > listY;
+
+  // if overlapping list, move ABOVE list instead
+  if (overlapsList) {
+    by = listY - bubbleH - 8;
+  }
+
+  // keep on screen
+  bx = constrain(bx, 10, width - bubbleW - 10);
+  by = constrain(by, 10, height - bubbleH - 10);
+
+  // draw bubble
+  fill(255);
+  stroke(200);
+  rect(bx, by, bubbleW, bubbleH, 8);
+
+  noStroke();
+  fill(0);
+  textAlign(LEFT, CENTER);
+  text(label, bx + padding, by + bubbleH / 2);
 }
 
 function drawToastUI(toastText, toastTimer) {
@@ -182,11 +205,14 @@ function drawControlsUI() {
   fill(0, 0, 0, 120);
   textAlign(RIGHT);
   textSize(12);
-  text("Move: A/D or ←/→   •   Click items to pick up   •   Hover for hints", width - 20, 25);
+  text(
+    "Move: A/D or ←/→ • Click items • Hover for hints • Press H or click 🐱 Hint",
+    width - 20,
+    25
+  );
 }
 
 function drawCartUI(collected, itemEmojiMap) {
-  // bottom-left cart bar
   let x = 20;
   let y = height - 55;
   let w = 360;
@@ -202,7 +228,6 @@ function drawCartUI(collected, itemEmojiMap) {
   textSize(14);
   text("Cart:", x + 12, y + h / 2);
 
-  // draw collected emojis
   textSize(20);
   let startX = x + 70;
   for (let i = 0; i < collected.length; i++) {
@@ -213,7 +238,6 @@ function drawCartUI(collected, itemEmojiMap) {
 }
 
 function drawHintUI(hintsLeft) {
-  // top-right hint button
   let x = width - 190;
   let y = 40;
   let w = 170;
