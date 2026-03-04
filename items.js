@@ -19,7 +19,13 @@ const ITEM_POOL = [
   { name: "rice", emoji: "🍚", hint: "White grains, super common meal!" },
   { name: "icecream", emoji: "🍨", hint: "Cold dessert that melts!" },
   { name: "donut", emoji: "🍩", hint: "Round sweet treat with a hole!" },
-  { name: "pizza", emoji: "🍕", hint: "Cheesy slice with toppings!" }
+  { name: "pizza", emoji: "🍕", hint: "Cheesy slice with toppings!" },
+
+  // Decoys (fun wrong items)
+  { name: "teddy", emoji: "🧸", hint: "A toy… why is this here??" },
+  { name: "socks", emoji: "🧦", hint: "Not groceries bestie 😭" },
+  { name: "toiletpaper", emoji: "🧻", hint: "Helpful… but not food!" },
+  { name: "rubberduck", emoji: "🦆", hint: "Quack?! Wrong aisle!" }
 ];
 
 function findItemByName(name) {
@@ -30,7 +36,7 @@ function findItemByName(name) {
 function shelfYForRow(row) {
   if (row === 1) return 250; // lower
   if (row === 2) return 200; // middle
-  return 160;                // top
+  return 160; // top
 }
 
 function makeSpawnedItem(proto, x, y) {
@@ -44,47 +50,48 @@ function makeSpawnedItem(proto, x, y) {
   };
 }
 
-// Spawns items across the aisle; guarantees all list items appear
-function spawnItemsForLevel(worldWidth, shelfRows, shoppingList, itemsToShow) {
+function spawnItemsForLevel(worldWidth, shelfRows, shoppingList, itemsToShow, allowedNames = []) {
   let items = [];
 
   // Always include required items
-  let needed = shoppingList
+  let needed = shoppingList.map(findItemByName).filter(Boolean);
+
+  // Build an “allowed pool” so each level feels like an aisle
+  let allowedPool = [];
+  if (allowedNames && allowedNames.length > 0) {
+    allowedPool = allowedNames.map(findItemByName).filter(Boolean);
+  } else {
+    allowedPool = [...ITEM_POOL];
+  }
+
+  // Add some decoys into every level (fun factor)
+  let decoys = ["teddy", "socks", "toiletpaper", "rubberduck"]
     .map(findItemByName)
     .filter(Boolean);
 
-  // Fill the rest with extras
-  let extras = shuffle([...ITEM_POOL]).filter((p) => !shoppingList.includes(p.name));
+  // Extras should come from allowed pool + some decoys
+  let extras = shuffle([...allowedPool, ...decoys]).filter((p) => !shoppingList.includes(p.name));
 
-  // Pick the set of items that will appear this level
-  let chosen = [...needed, ...extras].slice(0, itemsToShow);
+  // Pick the set shown (and shuffle so required items aren't clustered)
+  let chosen = shuffle([...needed, ...extras]).slice(0, itemsToShow);
 
-  // -------- NEW: randomize placement so list items are spread out --------
-  // Make evenly spaced "slots" across the aisle
+  // Slots across aisle
   let leftPad = 160;
   let rightPad = 160;
   let usable = worldWidth - leftPad - rightPad;
   let step = chosen.length > 1 ? usable / (chosen.length - 1) : 0;
 
   let slots = [];
-  for (let i = 0; i < chosen.length; i++) {
-    slots.push(leftPad + i * step);
-  }
+  for (let i = 0; i < chosen.length; i++) slots.push(leftPad + i * step);
 
-  // Shuffle the slots so items get spread randomly across the aisle
+  // Shuffle placement so list items are spread out
   slots = shuffle(slots);
-
-  // Shuffle chosen too, so required items aren't grouped together
   chosen = shuffle(chosen);
 
-  // Place items
   for (let i = 0; i < chosen.length; i++) {
     let x = slots[i];
-
-    // choose shelf row (random, not pattern-based)
     let row = 1 + floor(random(shelfRows));
     let y = shelfYForRow(row);
-
     items.push(makeSpawnedItem(chosen[i], x, y));
   }
 

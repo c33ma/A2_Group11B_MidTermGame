@@ -60,13 +60,28 @@ function drawPlayerWorld(player) {
   text("🛒", player.x, player.y - 1);
 }
 
-function drawItemsWorld(items) {
+function drawItemsWorld(items, camX) {
   textAlign(CENTER, CENTER);
   textSize(40);
 
+  let mx = mouseX + camX;
+  let my = mouseY;
+
   for (let it of items) {
-    fill(255);
-    rect(it.x - 26, it.y - 44, 52, 52, 10);
+    let hovered = dist(mx, my, it.x, it.y - 18) < it.radius;
+
+    // slot background
+    if (hovered) {
+      stroke(120);
+      strokeWeight(3);
+      fill(255);
+      rect(it.x - 28, it.y - 46, 56, 56, 12);
+      noStroke();
+    } else {
+      fill(255);
+      rect(it.x - 26, it.y - 44, 52, 52, 10);
+    }
+
     fill(0);
     text(it.emoji, it.x, it.y - 18);
   }
@@ -96,26 +111,50 @@ function drawHoverHintWorld(items, camX) {
 }
 
 function drawShoppingListUI(currentLevel, collected, shoppingList) {
-  fill(255);
-  stroke(200);
-  rect(20, 20, 240, 150, 12);
+  // Panel position
+  const x = 20;
+  const y = 20;
+  const w = 240;
+
+  // Dynamic sizing
+  const headerH = 78;     // space for "Level" + "Shopping List"
+  const lineH = 20;       // each list line height
+  const paddingBottom = 16;
+
+  const h = headerH + shoppingList.length * lineH + paddingBottom;
+
+  // Hover detection (screen coords)
+  const isHover =
+    mouseX >= x && mouseX <= x + w &&
+    mouseY >= y && mouseY <= y + h;
+
+  // Semi-transparent by default, solid on hover
+  const alpha = isHover ? 255 : 180;
+
+  // Panel background
+  fill(255, 255, 255, alpha);
+  stroke(200, 200, 200, alpha);
+  rect(x, y, w, h, 12);
   noStroke();
 
+  // Text
   fill(0);
   textAlign(LEFT);
   textSize(16);
-  text(`Level ${currentLevel} / 6`, 35, 45);
-  text("Shopping List", 35, 68);
+  text(`Level ${currentLevel} / 6`, x + 15, y + 25);
+  text("Shopping List", x + 15, y + 48);
 
+  // List items
   for (let i = 0; i < shoppingList.length; i++) {
-    let item = shoppingList[i];
+    const item = shoppingList[i];
+    const rowY = y + headerH + i * lineH - 4;
 
     if (collected.includes(item)) {
       fill(0, 160, 0);
-      text("✔ " + item, 35, 95 + i * 20);
+      text("✔ " + item, x + 15, rowY);
     } else {
       fill(0);
-      text("- " + item, 35, 95 + i * 20);
+      text("- " + item, x + 15, rowY);
     }
   }
 }
@@ -144,4 +183,53 @@ function drawControlsUI() {
   textAlign(RIGHT);
   textSize(12);
   text("Move: A/D or ←/→   •   Click items to pick up   •   Hover for hints", width - 20, 25);
+}
+
+function drawCartUI(collected, itemEmojiMap) {
+  // bottom-left cart bar
+  let x = 20;
+  let y = height - 55;
+  let w = 360;
+  let h = 38;
+
+  fill(255);
+  stroke(200);
+  rect(x, y, w, h, 12);
+  noStroke();
+
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(14);
+  text("Cart:", x + 12, y + h / 2);
+
+  // draw collected emojis
+  textSize(20);
+  let startX = x + 70;
+  for (let i = 0; i < collected.length; i++) {
+    let name = collected[i];
+    let emoji = itemEmojiMap[name] || "✅";
+    text(emoji, startX + i * 26, y + h / 2 + 1);
+  }
+}
+
+function drawHintUI(hintsLeft) {
+  // top-right hint button
+  let x = width - 190;
+  let y = 40;
+  let w = 170;
+  let h = 46;
+
+  fill(255);
+  stroke(200);
+  rect(x, y, w, h, 12);
+  noStroke();
+
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(14);
+  text("🐱 Hint", x + 12, y + h / 2);
+
+  textAlign(RIGHT, CENTER);
+  textSize(12);
+  text(`${hintsLeft} left`, x + w - 12, y + h / 2);
 }

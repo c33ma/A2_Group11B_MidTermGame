@@ -1,30 +1,35 @@
-// sketch.js
-// Main game loop + movement + camera + click logic
-
 let gameState = "start"; // start, game, levelComplete, winAll
 
-// WORLD + PLAYER + CAMERA
 let worldWidth = 2200;
 let floorY = 360;
 let player = { x: 120, y: floorY, r: 18, speed: 4 };
 let camX = 0;
 
-// LEVEL DATA
-let currentLevel = 0; // 1..6
+let currentLevel = 0;
 let shelfRows = 1;
+let aisleName = "";
 
-// GAME DATA
 let items = [];
 let shoppingList = [];
 let collected = [];
 
-// TOAST
 let toastText = "";
 let toastTimer = 0;
+
+// hint system
+let hintsLeft = 0;
+let catActive = false;
+let catTargetX = 0;
+
+// quick emoji map for cart UI
+let itemEmojiMap = {};
 
 function setup() {
   let canvas = createCanvas(900, 500);
   canvas.parent("game-container");
+
+  // build emoji map from ITEM_POOL
+  for (let it of ITEM_POOL) itemEmojiMap[it.name] = it.emoji;
 }
 
 function draw() {
@@ -35,43 +40,54 @@ function draw() {
     drawStartScreen();
     return;
   }
-
   if (gameState === "levelComplete") {
     drawLevelComplete(currentLevel);
     return;
   }
-
   if (gameState === "winAll") {
     drawWinAll();
     return;
   }
 
-  // GAME
   handleMovement();
   updateCamera();
+  updateCat();
 
   push();
   translate(-camX, 0);
 
   drawAisleWorld(worldWidth, floorY, shelfRows);
-  drawItemsWorld(items);
+  drawItemsWorld(items, camX);
   drawPlayerWorld(player);
-  drawHoverHintWorld(items, camX);
 
+  // hint arrow if cat is active
+  if (catActive) drawCatArrowWorld();
+
+  drawHoverHintWorld(items, camX);
   pop();
 
+  // UI
   drawShoppingListUI(currentLevel, collected, shoppingList);
+  drawHintUI(hintsLeft);
+  drawCartUI(collected, itemEmojiMap);
   drawToastUI(toastText, toastTimer);
+
+  // little aisle label
+  fill(0, 0, 0, 120);
+  textAlign(CENTER);
+  textSize(12);
+  text(aisleName, width / 2, 25);
+
   drawControlsUI();
 }
 
-// ---------- Level control ----------
 function startLevel(levelNum) {
   currentLevel = levelNum;
 
   let cfg = LEVELS[currentLevel - 1];
   shelfRows = cfg.shelves;
   worldWidth = cfg.world;
+  aisleName = cfg.aisle || "";
 
   collected = [];
   shoppingList = [...cfg.list];
@@ -79,7 +95,10 @@ function startLevel(levelNum) {
   player.x = 120;
   camX = 0;
 
-  items = spawnItemsForLevel(worldWidth, shelfRows, shoppingList, cfg.itemsToShow);
+  hintsLeft = cfg.hints ?? 1;
+  catActive = false;
+
+  items = spawnItemsForLevel(worldWidth, shelfRows, shoppingList, cfg.itemsToShow, cfg.allowed);
 
   gameState = "game";
 }
@@ -91,7 +110,6 @@ function finishLevelIfDone() {
   }
 }
 
-// ---------- Movement + camera ----------
 function handleMovement() {
   if (keyIsDown(65) || keyIsDown(LEFT_ARROW)) player.x -= player.speed;
   if (keyIsDown(68) || keyIsDown(RIGHT_ARROW)) player.x += player.speed;
@@ -102,17 +120,25 @@ function updateCamera() {
   camX = constrain(player.x - width / 2, 0, worldWidth - width);
 }
 
-// ---------- Toast + picking ----------
 function showToast(msg) {
   toastText = msg;
   toastTimer = 120;
 }
 
 function tryPickItem(itemName) {
+  // decoy fun messages
+  const funny = {
+    teddy: "Bestie that’s a teddy bear 🧸 not groceries 😭",
+    socks: "Socks are cute but not on the list 🧦",
+    toiletpaper: "Important item… but not on your list 🧻",
+    rubberduck: "Quack! Wrong aisle 🦆"
+  };
+
   if (!shoppingList.includes(itemName)) {
-    showToast("Not on your list — check the Shopping List ✨");
+    showToast(funny[itemName] || "Not on your list — check the Shopping List ✨");
     return;
   }
+
   if (collected.includes(itemName)) {
     showToast("You already got that one 😌");
     return;
@@ -120,27 +146,85 @@ function tryPickItem(itemName) {
 
   collected.push(itemName);
   showToast("Nice! Added to your cart ✅");
+
+  // if cat was guiding to that spot, stop guiding
+  if (catActive && abs(player.x - catTargetX) < 80) catActive = false;
+
   finishLevelIfDone();
 }
 
-// ---------- Mouse input ----------
+// ---------- CAT HINT ----------
+function useHint() {
+  if (hintsLeft <= 0) {
+    showToast("No hints left this level 😼");
+    return;
+  }
+
+  // find a remaining shopping list item not collected
+  let remaining = shoppingList.filter((n) => !collected.includes(n));
+  if (remaining.length === 0) return;
+
+  // find its item on shelves
+  let targetName = random(remaining);
+  let target = items.find((it) => it.name === targetName);
+
+  if (!target) {
+    showToast("Cat can't find it… try exploring!");
+    return;
+  }
+
+  hintsLeft--;
+  catActive = true;
+  catTargetX = target.x;
+
+  showToast(`🐱 Follow the cat! It knows where "${targetName}" is.`);
+}
+
+function updateCat() {
+  if (!catActive) return;
+
+  // if player is close, cat “arrives”
+  if (abs(player.x - catTargetX) < 60) {
+    catActive = false;
+    showToast("🐱 Here it is! Hover + click to pick it up.");
+  }
+}
+
+function drawCatArrowWorld() {
+  // draw an arrow above player pointing toward target
+  let dir = catTargetX > player.x ? 1 : -1;
+  let arrowX = player.x + dir * 40;
+  let arrowY = player.y - 60;
+
+  textAlign(CENTER, CENTER);
+  textSize(22);
+  text("🐱", player.x, player.y - 60);
+
+  textSize(24);
+  text(dir === 1 ? "➡️" : "⬅️", arrowX, arrowY);
+}
+
 function mousePressed() {
   if (gameState === "start") {
     startLevel(1);
     return;
   }
-
   if (gameState === "levelComplete") {
     startLevel(currentLevel + 1);
     return;
   }
-
   if (gameState === "winAll") {
     startLevel(1);
     return;
   }
 
-  // In-game click uses world coords
+  // click hint button area (top-right)
+  if (mouseX > width - 190 && mouseX < width - 20 && mouseY > 40 && mouseY < 86) {
+    useHint();
+    return;
+  }
+
+  // in-game click for items
   let mx = mouseX + camX;
   let my = mouseY;
 
@@ -149,5 +233,12 @@ function mousePressed() {
       tryPickItem(it.name);
       break;
     }
+  }
+}
+
+// optional keyboard shortcut: H for hint
+function keyPressed() {
+  if (gameState === "game" && (key === "h" || key === "H")) {
+    useHint();
   }
 }
