@@ -8,9 +8,14 @@ const LEVELS = [
     itemsToShow: 10,
     hints: 1,
     aisle: "Fruit Aisle",
+
+    // items commonly found here
     allowed: ["apple", "banana", "grapes", "carrot", "tomato"],
-    list: ["apple", "milk", "bread"]
+
+    // simple starter list
+    list: ["apple", "banana", "grapes"]
   },
+
   {
     level: 2,
     shelves: 1,
@@ -18,9 +23,12 @@ const LEVELS = [
     itemsToShow: 12,
     hints: 1,
     aisle: "Dairy Aisle",
+
     allowed: ["milk", "cheese", "yogurt", "egg"],
-    list: ["banana", "juice", "bread", "milk"]
+
+    list: ["milk", "cheese", "yogurt", "egg"]
   },
+
   {
     level: 3,
     shelves: 2,
@@ -28,9 +36,12 @@ const LEVELS = [
     itemsToShow: 14,
     hints: 1,
     aisle: "Breakfast Aisle",
+
     allowed: ["cereal", "milk", "bread", "egg", "yogurt"],
-    list: ["apple", "cheese", "egg", "cereal"]
+
+    list: ["cereal", "milk", "bread", "egg"]
   },
+
   {
     level: 4,
     shelves: 2,
@@ -38,19 +49,25 @@ const LEVELS = [
     itemsToShow: 16,
     hints: 1,
     aisle: "Snack Aisle",
-    allowed: ["cookie", "juice", "bread", "cheese", "donut"],
-    list: ["tomato", "fish", "milk", "bread", "cookie"]
+
+    allowed: ["cookie", "juice", "donut", "bread", "cheese"],
+
+    list: ["cookie", "juice", "donut", "bread", "cheese"]
   },
+
   {
     level: 5,
     shelves: 3,
     world: 3200,
     itemsToShow: 18,
     hints: 1,
-    aisle: "Mixed Aisle",
+    aisle: "Mixed Grocery Aisle",
+
     allowed: ["grapes", "rice", "cheese", "juice", "yogurt", "milk", "bread"],
+
     list: ["grapes", "rice", "cheese", "juice", "yogurt"]
   },
+
   {
     level: 6,
     shelves: 3,
@@ -58,7 +75,21 @@ const LEVELS = [
     itemsToShow: 20,
     hints: 1,
     aisle: "Chaos Aisle",
-    allowed: ["pizza", "donut", "icecream", "milk", "bread", "apple", "cookie", "juice"],
+
+    // final level mixes everything
+    allowed: [
+      "pizza",
+      "donut",
+      "icecream",
+      "milk",
+      "bread",
+      "apple",
+      "cookie",
+      "juice",
+      "grapes",
+      "cheese"
+    ],
+
     list: ["pizza", "donut", "icecream", "milk", "bread", "apple"]
   }
 ];

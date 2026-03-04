@@ -53,7 +53,13 @@ function makeSpawnedItem(proto, x, y) {
 function spawnItemsForLevel(worldWidth, shelfRows, shoppingList, itemsToShow, allowedNames = []) {
   let items = [];
 
-  // Always include required items
+  // --- Debug check: catch typos in level lists ---
+  let badNames = shoppingList.filter((name) => !findItemByName(name));
+  if (badNames.length > 0) {
+    console.warn("LEVEL DATA WARNING — list items not found in ITEM_POOL:", badNames);
+  }
+
+  // Always include required items (filter(Boolean) removes typos / missing)
   let needed = shoppingList.map(findItemByName).filter(Boolean);
 
   // Build an “allowed pool” so each level feels like an aisle
@@ -69,11 +75,38 @@ function spawnItemsForLevel(worldWidth, shelfRows, shoppingList, itemsToShow, al
     .map(findItemByName)
     .filter(Boolean);
 
-  // Extras should come from allowed pool + some decoys
+  // Extras should come from allowed pool + some decoys (and exclude required names)
   let extras = shuffle([...allowedPool, ...decoys]).filter((p) => !shoppingList.includes(p.name));
 
-  // Pick the set shown (and shuffle so required items aren't clustered)
+  // Pick the set shown
   let chosen = shuffle([...needed, ...extras]).slice(0, itemsToShow);
+
+  // --- HARD GUARANTEE: every required item must appear on shelves ---
+  let chosenNames = new Set(chosen.map((c) => c.name));
+  let missingRequired = needed.filter((req) => !chosenNames.has(req.name));
+
+  if (missingRequired.length > 0) {
+    // Force add missing required
+    for (let req of missingRequired) chosen.push(req);
+
+    // Trim back to itemsToShow by removing non-required items first
+    let requiredSet = new Set(needed.map((n) => n.name));
+
+    while (chosen.length > itemsToShow) {
+      // find an extra (non-required) to remove
+      let removeIndex = -1;
+      for (let i = chosen.length - 1; i >= 0; i--) {
+        if (!requiredSet.has(chosen[i].name)) {
+          removeIndex = i;
+          break;
+        }
+      }
+      // if somehow everything is required (unlikely), just stop trimming
+      if (removeIndex === -1) break;
+
+      chosen.splice(removeIndex, 1);
+    }
+  }
 
   // Slots across aisle
   let leftPad = 160;
