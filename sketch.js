@@ -126,7 +126,7 @@ function startLevel(levelNum) {
     shelfRows,
     shoppingList,
     cfg.itemsToShow,
-    cfg.allowed
+    cfg.allowed,
   );
 
   gameState = "game";
@@ -159,11 +159,13 @@ function tryPickItem(itemName) {
     teddy: "Bestie that’s a teddy bear 🧸 not groceries 😭",
     socks: "Socks are cute but not on the list 🧦",
     toiletpaper: "Important item… but not on your list 🧻",
-    rubberduck: "Quack! Wrong aisle 🦆"
+    rubberduck: "Quack! Wrong aisle 🦆",
   };
 
   if (!shoppingList.includes(itemName)) {
-    showToast(funny[itemName] || "Not on your list — check the Shopping List ✨");
+    showToast(
+      funny[itemName] || "Not on your list — check the Shopping List ✨",
+    );
     return;
   }
 
