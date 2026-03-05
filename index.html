@@ -1,15 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>Grocery Helper</title>
 
+    <!-- p5 library -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
+
+    <!-- Optional game font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="style.css" />
+
+    <style>
+      body {
+        margin: 0;
+        background: #ffe4ef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: "Press Start 2P", monospace;
+      }
+
+      #game-container {
+        width: 900px;
+        height: 500px;
+      }
+    </style>
   </head>
 
   <body>
+    <!-- p5 will place the canvas here -->
     <main id="game-container"></main>
 
     <!-- Data + helpers FIRST -->
