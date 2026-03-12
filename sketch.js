@@ -41,15 +41,22 @@ let pickups = [];
 
 let buttonBounds = null;
 
+let loadingBg;
+let storeBg;
+
 function preload() {
   bgMusic = loadSound("music.mp3");
+  loadingBg = loadImage("assets/loading-bg.png");
+  storeBg = loadImage("assets/store-bg.png");
 }
 
 function setup() {
   let canvas = createCanvas(900, 500);
   canvas.parent("game-container");
 
-  textFont("monospace");
+  pixelDensity(1);
+  noSmooth();
+  textFont("Press Start 2P");
 
   for (let it of ITEM_POOL) {
     itemEmojiMap[it.name] = it.emoji;
@@ -80,64 +87,116 @@ function draw() {
   drawTeleportFade();
 }
 
+function drawPixelPanel(x, y, w, h, fillCol = "#f4ecd8", borderCol = "#2f2a24") {
+  push();
+  rectMode(CORNER);
+  noStroke();
+
+  fill(borderCol);
+  rect(x, y, w, h);
+
+  fill("#ffffff22");
+  rect(x + 4, y + 4, w - 8, 6);
+
+  fill(fillCol);
+  rect(x + 6, y + 6, w - 12, h - 12);
+
+  fill("#00000018");
+  rect(x + 6, y + h - 14, w - 12, 8);
+  pop();
+}
+
+function drawPixelButton(cx, cy, label) {
+  textSize(12);
+
+  let padding = 28;
+  let w = textWidth(label) + padding * 2;
+  let h = 46;
+
+  let bx = cx - w / 2;
+  let by = cy - h / 2;
+
+  buttonBounds = { x: bx, y: by, w: w, h: h };
+
+  let hover = mouseX > bx && mouseX < bx + w && mouseY > by && mouseY < by + h;
+
+  push();
+  if (hover) by -= 3;
+
+  noStroke();
+  fill("#5b2d22");
+  rect(bx, by + 6, w, h);
+
+  fill("#c95c43");
+  rect(bx, by, w, h);
+
+  fill("#efc66d");
+  rect(bx + 4, by + 4, w - 8, h - 12);
+
+  fill("#2f2a24");
+  textAlign(CENTER, CENTER);
+  text(label, cx, by + h / 2);
+  pop();
+}
+
 function drawStart() {
-  background(255, 220, 235);
+  background(0);
 
-  textAlign(CENTER);
-
-  for (let f of fallingFruits) {
-    f.y += f.speed;
-
-    textSize(26);
-    text(f.emoji, f.x, f.y);
-
-    if (f.y > height) {
-      f.y = -20;
-      f.x = random(width);
-    }
+  if (loadingBg) {
+    image(loadingBg, 0, 0, width, height);
   }
 
-  fill(40);
-  textSize(36);
-  text("🍓 Grocery Helper 🍌", width / 2, 120);
+  fill(0, 110);
+  rect(0, 0, width, height);
 
-  textSize(16);
-  text("Find the groceries on your list!", width / 2, 180);
+  drawPixelPanel(width / 2 - 290, 95, 580, 230, "#f6edd9", "#2f2a24");
 
-  drawAutoButton(width / 2, 280, "Start Shopping 🛒");
+  fill("#c5281c");
+  textAlign(CENTER);
+  textSize(22);
+  text("GROCERY HELPER", width / 2, 155);
+
+  fill("#2f2a24");
+  textSize(10);
+  text("FIND EVERYTHING ON YOUR SHOPPING LIST", width / 2, 205);
+  text("AND CLEAR ALL THREE AISLES", width / 2, 235);
+
+  textSize(26);
+  text("🛒", width / 2, 278);
+
+  drawAutoButton(width / 2, 375, "START");
 }
 
 function drawInstructions() {
-  background(255, 235, 245);
+  if (loadingBg) {
+    image(loadingBg, 0, 0, width, height);
+  } else {
+    background("#d8c6a4");
+  }
+
+  fill(0, 110);
+  rect(0, 0, width, height);
+
+  drawPixelPanel(110, 60, 680, 340, "#f6edd9", "#2f2a24");
 
   textAlign(CENTER);
+  fill("#c5281c");
+  textSize(20);
+  text("HOW TO PLAY", width / 2, 115);
 
-  fill(40);
-  textSize(34);
-  text("How To Play 🛒", width / 2, 100);
+  fill("#2f2a24");
+  textSize(10);
 
-  fill(255);
-  stroke(210);
-  rect(width / 2 - 320, 150, 640, 250, 16);
+  text("MOVE WITH A / D OR ARROW KEYS", width / 2, 180);
+  text("CLICK ITEMS TO COLLECT THEM", width / 2, 220);
+  text("ONLY PICK WHAT IS ON YOUR LIST", width / 2, 260);
+  text("USE HINTS TO TELEPORT TO THE NEXT ITEM", width / 2, 300);
 
-  fill(60);
-  noStroke();
-  textSize(16);
-
-  text(
-    "Move using A / D or Arrow Keys.\n\n" +
-      "Click items on shelves to collect them.\n\n" +
-      "Only collect items in your shopping list.\n\n" +
-      "Use hints to teleport to the next item.",
-    width / 2,
-    230,
-  );
-
-  drawAutoButton(width / 2, 440, "Continue Shopping 🛍️");
+  drawAutoButton(width / 2, 380, "CONTINUE");
 }
 
 function drawGame() {
-  drawPastelBackground();
+  drawStoreBackground();
 
   handleMovement();
   updateCamera();
@@ -168,7 +227,7 @@ function drawLevelComplete() {
   drawEndScreen(
     "Level " + currentLevel + " Complete!",
     "Great shopping!",
-    "Continue ➜",
+    "Continue",
     "🥳",
   );
 }
@@ -192,35 +251,30 @@ function drawWin() {
 }
 
 function drawEndScreen(title, subtitle, buttonText, emoji) {
-  background(255, 240, 220);
+  if (loadingBg) {
+    image(loadingBg, 0, 0, width, height);
+  } else {
+    background("#d8c6a4");
+  }
 
-  let cardW = 420;
-  let cardH = 240;
+  fill(0, 110);
+  rect(0, 0, width, height);
 
-  let x = width / 2 - cardW / 2;
-  let y = height / 2 - cardH / 2;
-
-  fill(0, 30);
-  rect(x + 6, y + 6, cardW, cardH, 18);
-
-  fill(255);
-  stroke(220);
-  rect(x, y, cardW, cardH, 18);
+  drawPixelPanel(width / 2 - 250, height / 2 - 130, 500, 260, "#f6edd9", "#2f2a24");
 
   textAlign(CENTER);
+  textSize(34);
+  text(emoji, width / 2, height / 2 - 45);
 
-  textSize(40);
-  text(emoji, width / 2, y + 60);
+  fill("#c5281c");
+  textSize(16);
+  text(title.toUpperCase(), width / 2, height / 2 + 5);
 
-  fill(40);
-  textSize(24);
-  text(title, width / 2, y + 110);
+  fill("#2f2a24");
+  textSize(9);
+  text(subtitle.toUpperCase(), width / 2, height / 2 + 42);
 
-  textSize(14);
-  fill(90);
-  text(subtitle, width / 2, y + 140);
-
-  drawAutoButton(width / 2, y + 190, buttonText);
+  drawAutoButton(width / 2, height / 2 + 95, buttonText.toUpperCase());
 }
 
 function mousePressed() {
@@ -277,7 +331,6 @@ function mousePressed() {
 
       if (targetItem) {
         teleportFade = 255;
-
         player.x = targetItem.x;
 
         highlightedItem = targetItem;
@@ -334,9 +387,7 @@ function handleMovement() {
   }
 
   player.speed = lerp(player.speed, player.targetSpeed, 0.15);
-
   player.x += player.speed;
-
   player.x = constrain(player.x, 40, worldWidth - 40);
 }
 
@@ -348,34 +399,7 @@ function updateCamera() {
 }
 
 function drawAutoButton(cx, cy, label) {
-  textSize(16);
-
-  let padding = 30;
-  let w = textWidth(label) + padding;
-  let h = 48;
-
-  let bx = cx - w / 2;
-  let by = cy - h / 2;
-
-  buttonBounds = { x: bx, y: by, w: w, h: h };
-
-  let hover = mouseX > bx && mouseX < bx + w && mouseY > by && mouseY < by + h;
-
-  push();
-
-  translate(cx, cy);
-
-  if (hover) scale(1.05);
-
-  fill(200, 255, 200);
-  rectMode(CENTER);
-  rect(0, 0, w, h, 12);
-
-  fill(40);
-  textAlign(CENTER, CENTER);
-  text(label, 0, 2);
-
-  pop();
+  drawPixelButton(cx, cy, label);
 }
 
 function startMusic() {
@@ -441,17 +465,21 @@ function drawPickups() {
 }
 
 function drawTopBar() {
-  fill(70);
-  textAlign(CENTER);
-  textSize(18);
-  text("🛒 " + aisleName, width / 2, 30);
+  drawPixelPanel(width / 2 - 170, 10, 340, 42, "#f6edd9", "#2f2a24");
+
+  fill("#2f2a24");
+  textAlign(CENTER, CENTER);
+  textSize(10);
+  text(aisleName.toUpperCase(), width / 2, 31);
 }
 
-function drawPastelBackground() {
-  for (let y = 0; y < height; y++) {
-    let c = lerpColor(color(255, 220, 240), color(210, 235, 255), y / height);
-    stroke(c);
-    line(0, y, width, y);
+function drawStoreBackground() {
+  background("#d5c2a1");
+
+  if (storeBg) {
+    image(storeBg, 0, 0, width, height);
+    fill(255, 255, 255, 40);
+    rect(0, 0, width, height);
   }
 }
 
@@ -469,37 +497,43 @@ function getHoveredItem() {
 function drawItemHint() {
   if (!hoveredItem) return;
 
-  textSize(12);
+  textSize(9);
 
-  let padding = 24;
-  let w = textWidth(hoveredItem.name) + padding;
+  let label = hoveredItem.name.toUpperCase();
+  let padding = 18;
+  let w = textWidth(label) + padding * 2;
 
-  fill(255);
-  stroke(200);
-  rect(mouseX + 10, mouseY - 32, w, 30, 8);
-
-  fill(40);
   noStroke();
-  textAlign(LEFT, CENTER);
+  fill("#2f2a24");
+  rect(mouseX + 12, mouseY - 34, w, 26);
 
-  text(hoveredItem.name, mouseX + 20, mouseY - 16);
+  fill("#f6edd9");
+  rect(mouseX + 16, mouseY - 30, w - 8, 18);
+
+  fill("#2f2a24");
+  textAlign(LEFT, CENTER);
+  text(label, mouseX + 24, mouseY - 21);
 }
 
 function drawToast() {
   if (toastTimer <= 0) return;
 
-  fill(255);
-  stroke(200);
+  let w = 280;
+  let h = 42;
+  let x = width / 2 - w / 2;
+  let y = height - 62;
 
-  rect(width / 2 - 120, height - 60, 240, 40, 10);
-
-  fill(40);
   noStroke();
+  fill("#2f2a24");
+  rect(x, y, w, h);
 
+  fill("#f6edd9");
+  rect(x + 6, y + 6, w - 12, h - 12);
+
+  fill("#2f2a24");
   textAlign(CENTER, CENTER);
-  textSize(14);
-
-  text(toastText, width / 2, height - 40);
+  textSize(9);
+  text(toastText.toUpperCase(), width / 2, y + 21);
 
   toastTimer--;
 }

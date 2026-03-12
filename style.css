@@ -1,19 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
 body {
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
-  font-family: Arial, Helvetica, sans-serif;
+  background: #d9d2c3;
+  font-family: "Press Start 2P", monospace;
   text-align: center;
+  image-rendering: pixelated;
 }
 
 #game-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 40px;
+  min-height: 100vh;
 }
 
 canvas {
-  border: 3px solid #333;
-  border-radius: 10px;
+  border: 6px solid #2f2a24;
+  box-shadow:
+    0 0 0 6px #8f3b2e,
+    0 0 0 12px #e6d7b8;
+  image-rendering: pixelated;
 }
