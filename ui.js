@@ -111,13 +111,14 @@ function drawShoppingListUI(currentLevel, collected, shoppingList) {
   for (let i = 0; i < shoppingList.length; i++) {
     let item = shoppingList[i];
     let y = 100 + i * 22;
+    let emoji = itemEmojiMap[item] || "❓";
 
     if (collected.includes(item)) {
       fill(120, 200, 120);
-      text("✔ " + item, 30, y);
+      text("✔ " + emoji + " " + item, 30, y);
     } else {
       fill(40);
-      text("- " + item, 30, y);
+      text("- " + emoji + " " + item, 30, y);
     }
   }
 }
@@ -127,26 +128,36 @@ function drawHintUI(hintsLeft) {
   stroke(200);
   rect(width - 200, 20, 180, 60, 10);
 
+  textAlign(CENTER, CENTER);
+
+  textSize(22);
+  text("💡", width - 165, 50);
+
   fill(40);
   noStroke();
-
-  textAlign(CENTER, CENTER);
   textSize(15);
-
-  text("Hint (" + hintsLeft + ")", width - 110, 50);
+  text("Hint (" + hintsLeft + ")", width - 95, 50);
 }
 
 function drawCartUI(collected, itemEmojiMap) {
   fill(255);
   stroke(200);
-  rect(width - 200, 95, 180, 70, 10);
+  rect(width - 200, 95, 180, 90, 10);
 
   fill(40);
   noStroke();
 
   textAlign(CENTER);
   textSize(13);
+  text("Cart", width - 110, 118);
 
-  text("Cart", width - 110, 120);
-  text(collected.length, width - 110, 150);
+  textSize(20);
+
+  let emojis = collected.map((item) => itemEmojiMap[item] || "❓");
+
+  for (let i = 0; i < emojis.length; i++) {
+    let x = width - 170 + (i % 5) * 28;
+    let y = 145 + floor(i / 5) * 24;
+    text(emojis[i], x, y);
+  }
 }

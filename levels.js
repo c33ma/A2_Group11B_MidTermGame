@@ -16,7 +16,7 @@ const LEVELS = [
     itemsToShow: 12,
     hints: 3,
     aisle: "Dairy Aisle",
-    list: ["milk", "cheese", "yogurt", "egg"],
+    list: ["milk", "cheese", "butter", "egg"],
   },
 
   {

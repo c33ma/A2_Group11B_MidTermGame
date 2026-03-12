@@ -5,7 +5,7 @@ const ITEM_POOL = [
   { name: "bread", emoji: "🍞" },
   { name: "juice", emoji: "🧃" },
   { name: "cereal", emoji: "🥣" },
-  { name: "pancake", emoji: "🥞" },
+  { name: "butter", emoji: "🧈" },
   { name: "cheese", emoji: "🧀" },
   { name: "cookie", emoji: "🍪" },
   { name: "carrot", emoji: "🥕" },
@@ -38,11 +38,12 @@ function spawnItemsForLevel(worldWidth, shoppingList, itemsToShow) {
   slots = shuffle(slots);
 
   let items = [];
+  let usedNames = [];
 
+  // always place every shopping list item first
   for (let name of shoppingList) {
     let proto = ITEM_POOL.find((p) => p.name === name);
-
-    if (!proto) continue;
+    if (!proto || slots.length === 0) continue;
 
     let pos = slots.pop();
 
@@ -52,12 +53,16 @@ function spawnItemsForLevel(worldWidth, shoppingList, itemsToShow) {
       x: pos.x,
       y: pos.y,
     });
+
+    usedNames.push(proto.name);
   }
 
-  let pool = shuffle([...ITEM_POOL]);
+  // only add extra items that are not already used
+  let extraPool = shuffle(ITEM_POOL.filter((p) => !usedNames.includes(p.name)));
 
-  while (items.length < itemsToShow && slots.length > 0) {
-    let proto = random(pool);
+  while (items.length < itemsToShow && slots.length > 0 && extraPool.length > 0) {
+    let proto = extraPool.pop();
+
     let pos = slots.pop();
 
     items.push({
@@ -66,6 +71,8 @@ function spawnItemsForLevel(worldWidth, shoppingList, itemsToShow) {
       x: pos.x,
       y: pos.y,
     });
+
+    usedNames.push(proto.name);
   }
 
   return items;
