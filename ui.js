@@ -42,14 +42,24 @@ function drawItemsWorld(items) {
     /* hint glow */
 
     if (highlightedItem === it && highlightTimer > 0) {
-      let glow = sin(frameCount * 0.2) * 4 + 24;
+  let glow = sin(frameCount * 0.2) * 6 + 30;
 
-      noStroke();
-      fill(255, 240, 180, 90);
-      ellipse(0, 0, glow * 2, glow * 2);
+  noStroke();
 
-      highlightTimer--;
-    }
+  // outer glow
+  fill(255, 230, 80, 70);
+  ellipse(0, 0, glow * 3.2, glow * 3.2);
+
+  // middle glow
+  fill(255, 240, 120, 120);
+  ellipse(0, 0, glow * 2.3, glow * 2.3);
+
+  // bright inner glow
+  fill(255, 255, 180, 180);
+  ellipse(0, 0, glow * 1.4, glow * 1.4);
+
+  highlightTimer--;
+}
 
     /* hover feedback */
 

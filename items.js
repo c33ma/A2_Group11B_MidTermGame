@@ -5,7 +5,7 @@ const ITEM_POOL = [
   { name: "bread", emoji: "🍞" },
   { name: "juice", emoji: "🧃" },
   { name: "cereal", emoji: "🥣" },
-  { name: "yogurt", emoji: "🍦" },
+  { name: "pancake", emoji: "🥞" },
   { name: "cheese", emoji: "🧀" },
   { name: "cookie", emoji: "🍪" },
   { name: "carrot", emoji: "🥕" },
