@@ -8,7 +8,6 @@ const LEVELS = [
     aisle: "Fruit Aisle",
     list: ["apple", "banana", "grapes"],
   },
-
   {
     level: 2,
     shelves: 1,
@@ -18,7 +17,6 @@ const LEVELS = [
     aisle: "Dairy Aisle",
     list: ["milk", "cheese", "butter", "egg"],
   },
-
   {
     level: 3,
     shelves: 2,

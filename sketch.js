@@ -45,12 +45,17 @@ let storeBg;
 let playerSprite;
 
 function preload() {
-  bgMusic = loadSound("music.mp3");
+  soundFormats("mp3");
 
   loadingBg = loadImage("assets/images/loading-bg.png");
   storeBg = loadImage("assets/images/store-bg.png");
-
   playerSprite = loadImage("assets/images/shoppingcart.png");
+
+  bgMusic = loadSound(
+    "music.mp3",
+    () => console.log("music loaded"),
+    () => console.log("music failed")
+  );
 }
 
 function setup() {
@@ -94,13 +99,15 @@ function drawPixelPanel(x, y, w, h, fillCol = "#f4ecd8", borderCol = "#7a5a3a") 
   fill(255, 255, 255, 28);
   rect(x + 4, y + 4, w - 8, 4);
 
-  fill(0, 0, 0, 14);
+  fill(0, 0, 0, 12);
   rect(x + 4, y + h - 10, w - 8, 6);
+
   pop();
 }
 
 function drawPixelButton(cx, cy, label) {
   textSize(12);
+  textFont("Press Start 2P");
 
   let padding = 26;
   let w = textWidth(label) + padding * 2;
@@ -162,6 +169,7 @@ function drawInstructions() {
   textAlign(CENTER);
   fill("#c5281c");
   textSize(20);
+  textFont("Press Start 2P");
   text("HOW TO PLAY", width / 2, 135);
 
   fill("#3f2e1f");
@@ -241,10 +249,12 @@ function drawEndScreen(title, subtitle, buttonText, emoji) {
   drawPixelPanel(width / 2 - 250, height / 2 - 130, 500, 260, "#f6edd9", "#7a5a3a");
 
   textAlign(CENTER);
+  textFont("sans-serif");
   textSize(34);
   text(emoji, width / 2, height / 2 - 45);
 
   fill("#c5281c");
+  textFont("Press Start 2P");
   textSize(16);
   text(title.toUpperCase(), width / 2, height / 2 + 5);
 
@@ -335,7 +345,6 @@ function mousePressed() {
         x: it.x,
         y: it.y,
         emoji: it.emoji,
-        name: it.name,
         scale: 1
       });
 
@@ -383,7 +392,7 @@ function drawAutoButton(cx, cy, label) {
 }
 
 function startMusic() {
-  if (!musicStarted) {
+  if (!musicStarted && bgMusic && bgMusic.isLoaded()) {
     bgMusic.setVolume(0.3);
     bgMusic.loop();
     musicStarted = true;
@@ -436,12 +445,22 @@ function drawPickups() {
     translate(p.x - camX, p.y);
     scale(p.scale);
 
-    textSize(38);
     textAlign(CENTER, CENTER);
+    textFont("sans-serif");
+    textSize(46);
+    fill(255);
+    stroke(60, 40, 20, 120);
+    strokeWeight(1.5);
     text(p.emoji, 0, 0);
 
     pop();
   }
+
+  // reset text styles after drawing pickups
+  textFont("Press Start 2P");
+  textSize(10);
+  noStroke();
+  fill("#3f2e1f");
 }
 
 function drawTopBar() {
@@ -449,6 +468,7 @@ function drawTopBar() {
 
   fill("#3f2e1f");
   textAlign(CENTER, CENTER);
+  textFont("Press Start 2P");
   textSize(10);
   text(aisleName.toUpperCase(), width / 2, 28);
 }
@@ -477,6 +497,9 @@ function getHoveredItem() {
 function drawItemHint() {
   if (!hoveredItem) return;
 
+  push();
+
+  textFont("Press Start 2P");
   textSize(9);
 
   let label = hoveredItem.name.toUpperCase();
@@ -493,10 +516,14 @@ function drawItemHint() {
   fill("#3f2e1f");
   textAlign(LEFT, CENTER);
   text(label, mouseX + 24, mouseY - 21);
+
+  pop();
 }
 
 function drawToast() {
   if (toastTimer <= 0) return;
+
+  push();
 
   let w = 280;
   let h = 38;
@@ -512,8 +539,11 @@ function drawToast() {
 
   fill("#3f2e1f");
   textAlign(CENTER, CENTER);
+  textFont("Press Start 2P");
   textSize(9);
   text(toastText.toUpperCase(), width / 2, y + 19);
+
+  pop();
 
   toastTimer--;
 }

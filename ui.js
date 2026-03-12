@@ -21,7 +21,7 @@ function drawAisleWorld(worldWidth, floorY) {
 
 function drawItemsWorld(items) {
   for (let it of items) {
-    let hover = dist(mouseX + camX, mouseY, it.x, it.y) < 30;
+    let hover = dist(mouseX + camX, mouseY, it.x, it.y) < 34;
 
     push();
     translate(it.x, it.y);
@@ -31,21 +31,25 @@ function drawItemsWorld(items) {
 
     if (highlightedItem === it && highlightTimer > 0) {
       noStroke();
-      fill(255, 240, 120, 70);
-      ellipse(0, 0, 58, 58);
+      fill(255, 240, 120, 90);
+      ellipse(0, 0, 66, 66);
 
-      fill(255, 250, 180, 90);
-      ellipse(0, 0, 42, 42);
+      fill(255, 250, 180, 110);
+      ellipse(0, 0, 48, 48);
 
       highlightTimer--;
     }
 
     if (hover) {
-      scale(1.12);
+      scale(1.15);
     }
 
     textAlign(CENTER, CENTER);
-    textSize(34);
+    textSize(42);
+    textFont("sans-serif");
+    fill(255);
+    stroke(60, 40, 20, 120);
+    strokeWeight(1.5);
     text(it.emoji, 0, 0);
 
     pop();
@@ -56,17 +60,19 @@ function drawPlayerWorld(player) {
   push();
   translate(player.x, player.y);
 
-  fill(0, 0, 0, 40);
-  ellipse(0, -4, 54, 14);
+  fill(0, 0, 0, 45);
+  noStroke();
+  ellipse(0, -4, 70, 18);
 
   if (playerSprite) {
     imageMode(CENTER);
-    image(playerSprite, 0, -22, 88, 88);
+    image(playerSprite, 0, -28, 120, 120);
     imageMode(CORNER);
   } else {
     textAlign(CENTER, CENTER);
-    textSize(50);
-    text("🛒", 0, -15);
+    textFont("sans-serif");
+    textSize(64);
+    text("🛒", 0, -20);
   }
 
   pop();
@@ -79,6 +85,7 @@ function drawShoppingListUI(currentLevel, collected, shoppingList) {
   noStroke();
   textSize(10);
   textAlign(LEFT, TOP);
+  textFont("Press Start 2P");
 
   text("LEVEL " + currentLevel + " / 3", 34, 34);
   text("SHOPPING LIST", 34, 62);
@@ -90,12 +97,18 @@ function drawShoppingListUI(currentLevel, collected, shoppingList) {
     let isDone = collected.includes(item);
 
     fill(isDone ? "#4c9a4c" : "#3f2e1f");
+    textSize(10);
+    textFont("Press Start 2P");
     text(isDone ? "OK" : "-", 34, y);
 
-    textSize(18);
+    textSize(20);
+    textFont("sans-serif");
+    noStroke();
+    fill(255);
     text(emoji, 64, y - 2);
 
     textSize(10);
+    textFont("Press Start 2P");
     fill(isDone ? "#4c9a4c" : "#3f2e1f");
     text(item.toUpperCase(), 88, y);
   }
@@ -107,6 +120,7 @@ function drawHintUI(hintsLeft) {
   fill("#3f2e1f");
   noStroke();
   textAlign(CENTER, CENTER);
+  textFont("Press Start 2P");
   textSize(11);
   text("💡 HINT " + hintsLeft, width - 107, 46);
 }
@@ -117,6 +131,7 @@ function drawCartUI(collected, itemEmojiMap) {
   fill("#3f2e1f");
   noStroke();
   textAlign(CENTER, TOP);
+  textFont("Press Start 2P");
   textSize(10);
   text("CART", width - 107, 104);
 
@@ -126,8 +141,10 @@ function drawCartUI(collected, itemEmojiMap) {
     let x = width - 164 + (i % 4) * 34;
     let y = 140 + floor(i / 4) * 28;
 
-    textSize(20);
+    textSize(22);
     textAlign(CENTER, CENTER);
+    textFont("sans-serif");
+    fill(255);
     text(emoji, x, y);
   }
 }
