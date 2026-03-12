@@ -14,7 +14,12 @@ function drawAisleWorld(worldWidth, floorY) {
     strokeWeight(4);
     line(0, y, worldWidth, y);
 
+    fill(0, 20);
+    noStroke();
+    rect(0, y + 4, worldWidth, 4);
+
     for (let x = 0; x < worldWidth; x += 200) {
+      stroke(210);
       strokeWeight(2);
       line(x, y, x, y + 12);
     }
@@ -26,13 +31,37 @@ function drawItemsWorld(items) {
     let hover = dist(mouseX + camX, mouseY, it.x, it.y) < 26;
 
     push();
+
     translate(it.x, it.y);
 
-    if (hover) scale(1.15);
+    /* floating motion */
+
+    let bob = sin(frameCount * 0.05 + it.x) * 2;
+    translate(0, bob);
+
+    /* hint glow */
+
+    if (highlightedItem === it && highlightTimer > 0) {
+      let glow = sin(frameCount * 0.2) * 4 + 24;
+
+      noStroke();
+      fill(255, 240, 180, 90);
+      ellipse(0, 0, glow * 2, glow * 2);
+
+      highlightTimer--;
+    }
+
+    /* hover feedback */
+
+    if (hover) scale(1.12);
+
+    /* item box */
 
     fill(255);
     stroke(210);
     rect(-20, -20, 40, 40, 8);
+
+    /* emoji */
 
     textAlign(CENTER, CENTER);
     textSize(24);
@@ -58,7 +87,7 @@ function drawPlayerWorld(player) {
 function drawShoppingListUI(currentLevel, collected, shoppingList) {
   fill(255);
   stroke(200);
-  rect(20, 60, 200, 160, 10);
+  rect(20, 20, 220, 170, 10);
 
   fill(40);
   noStroke();
@@ -66,49 +95,48 @@ function drawShoppingListUI(currentLevel, collected, shoppingList) {
   textSize(14);
   textAlign(LEFT);
 
-  text("Level " + currentLevel + " / 3", 30, 80);
-  text("Shopping List:", 30, 105);
+  text("Level " + currentLevel + " / 3", 30, 40);
+  text("Shopping List:", 30, 70);
 
   for (let i = 0; i < shoppingList.length; i++) {
     let item = shoppingList[i];
-    let y = 130 + i * 22;
+    let y = 100 + i * 22;
 
     if (collected.includes(item)) {
       fill(120, 200, 120);
+      text("✔ " + item, 30, y);
     } else {
       fill(40);
+      text("- " + item, 30, y);
     }
-
-    text("- " + item, 30, y);
   }
 }
 
 function drawHintUI(hintsLeft) {
   fill(255);
   stroke(200);
-  rect(width - 120, 60, 100, 40, 10);
+  rect(width - 200, 20, 180, 60, 10);
 
   fill(40);
   noStroke();
 
   textAlign(CENTER, CENTER);
-  textSize(13);
+  textSize(15);
 
-  text("Hint (" + hintsLeft + ")", width - 70, 80);
+  text("Hint (" + hintsLeft + ")", width - 110, 50);
 }
 
 function drawCartUI(collected, itemEmojiMap) {
   fill(255);
   stroke(200);
-  rect(width - 120, 110, 100, 60, 10);
+  rect(width - 200, 95, 180, 70, 10);
 
   fill(40);
   noStroke();
 
   textAlign(CENTER);
-  textSize(12);
+  textSize(13);
 
-  text("Cart", width - 70, 130);
-
-  text(collected.length, width - 70, 155);
+  text("Cart", width - 110, 120);
+  text(collected.length, width - 110, 150);
 }
