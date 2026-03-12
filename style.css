@@ -17,9 +17,9 @@ body {
 }
 
 canvas {
-  border: 6px solid #2f2a24;
+  border: 5px solid #7a5a3a;
   box-shadow:
-    0 0 0 6px #8f3b2e,
-    0 0 0 12px #e6d7b8;
+    0 0 0 5px #b76e4a,
+    0 0 0 10px #e6d7b8;
   image-rendering: pixelated;
 }

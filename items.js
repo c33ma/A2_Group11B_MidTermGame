@@ -24,13 +24,13 @@ const ITEM_POOL = [
 ];
 
 function spawnItemsForLevel(worldWidth, shoppingList, itemsToShow) {
-  let shelfLevels = [360, 290, 220];
+  let shelfLevels = [354, 284, 214];
   let shelfSpacing = 180;
 
   let slots = [];
 
   for (let y of shelfLevels) {
-    for (let x = 80; x < worldWidth; x += shelfSpacing) {
+    for (let x = 90; x < worldWidth - 60; x += shelfSpacing) {
       slots.push({ x: x, y: y });
     }
   }
@@ -40,7 +40,6 @@ function spawnItemsForLevel(worldWidth, shoppingList, itemsToShow) {
   let items = [];
   let usedNames = [];
 
-  // always place every shopping list item first
   for (let name of shoppingList) {
     let proto = ITEM_POOL.find((p) => p.name === name);
     if (!proto || slots.length === 0) continue;
@@ -57,12 +56,10 @@ function spawnItemsForLevel(worldWidth, shoppingList, itemsToShow) {
     usedNames.push(proto.name);
   }
 
-  // only add extra items that are not already used
   let extraPool = shuffle(ITEM_POOL.filter((p) => !usedNames.includes(p.name)));
 
   while (items.length < itemsToShow && slots.length > 0 && extraPool.length > 0) {
     let proto = extraPool.pop();
-
     let pos = slots.pop();
 
     items.push({

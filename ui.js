@@ -1,27 +1,27 @@
 function drawAisleWorld(worldWidth, floorY) {
-  let shelfLevels = [floorY - 60, floorY - 130, floorY - 200];
+  let shelfLevels = [floorY - 66, floorY - 136, floorY - 206];
+
+  noStroke();
 
   for (let y of shelfLevels) {
-    fill(255, 255, 255, 35);
-    rect(0, y - 4, worldWidth, 8);
+    fill(255, 255, 255, 32);
+    rect(0, y - 2, worldWidth, 4);
 
-    fill("#203a5a");
-    rect(0, y + 8, worldWidth, 6);
+    fill("#4f6787");
+    rect(0, y + 10, worldWidth, 5);
   }
 
   for (let x = 0; x < worldWidth; x += 40) {
     for (let y = floorY; y < height; y += 40) {
-      fill(255, 248, 235, 18);
+      fill(255, 248, 235, 10);
       rect(x, y, 40, 40);
     }
   }
 }
 
 function drawItemsWorld(items) {
-
   for (let it of items) {
-
-    let hover = dist(mouseX + camX, mouseY, it.x, it.y) < 26;
+    let hover = dist(mouseX + camX, mouseY, it.x, it.y) < 30;
 
     push();
     translate(it.x, it.y);
@@ -30,169 +30,120 @@ function drawItemsWorld(items) {
     translate(0, bob);
 
     if (highlightedItem === it && highlightTimer > 0) {
-
       noStroke();
+      fill(255, 240, 120, 70);
+      ellipse(0, 0, 58, 58);
 
-      fill(255, 240, 120, 80);
-      rect(-24, -24, 48, 48);
-
-      fill(255, 250, 180, 120);
-      rect(-18, -18, 36, 36);
+      fill(255, 250, 180, 90);
+      ellipse(0, 0, 42, 42);
 
       highlightTimer--;
     }
 
     if (hover) {
-      scale(1.1);
+      scale(1.12);
     }
 
-    // item card
-    noStroke();
-
-    fill("#2f2a24");
-    rect(-20, -20, 40, 40);
-
-    fill("#f6edd9");
-    rect(-16, -16, 32, 32);
-
-    fill("#ffffff55");
-    rect(-16, -16, 32, 5);
-
     textAlign(CENTER, CENTER);
-    textSize(20);
-    text(it.emoji, 0, 2);
+    textSize(34);
+    text(it.emoji, 0, 0);
 
     pop();
   }
 }
 
 function drawPlayerWorld(player) {
-
   push();
   translate(player.x, player.y);
 
-  // shadow
-  noStroke();
-  fill(0, 50);
-  ellipse(0, -2, 36, 12);
+  fill(0, 0, 0, 40);
+  ellipse(0, -4, 54, 14);
 
-  rectMode(CENTER);
-
-  stroke("#2f2a24");
-  strokeWeight(3);
-  noFill();
-
-  // cart basket
-  rect(0, -22, 28, 18);
-
-  // handle
-  line(14, -28, 24, -42);
-
-  // wheels
-  fill("#2f2a24");
-  noStroke();
-  ellipse(-8, -8, 7, 7);
-  ellipse(8, -8, 7, 7);
-
-  // groceries inside
-  fill("#ef6f51");
-  rect(-6, -24, 6, 6);
-
-  fill("#7bc96f");
-  rect(2, -26, 6, 8);
-
-  fill("#f4c95d");
-  rect(7, -22, 5, 5);
+  if (playerSprite) {
+    imageMode(CENTER);
+    image(playerSprite, 0, -22, 88, 88);
+    imageMode(CORNER);
+  } else {
+    textAlign(CENTER, CENTER);
+    textSize(50);
+    text("🛒", 0, -15);
+  }
 
   pop();
 }
 
 function drawShoppingListUI(currentLevel, collected, shoppingList) {
+  drawFixedPanel(18, 18, 250, 190);
 
-  drawFixedPanel(18, 18, 240, 185);
-
-  fill("#2f2a24");
+  fill("#3f2e1f");
   noStroke();
-
   textSize(10);
   textAlign(LEFT, TOP);
 
-  text("LEVEL " + currentLevel + " / 3", 34, 36);
-  text("SHOPPING LIST", 34, 66);
+  text("LEVEL " + currentLevel + " / 3", 34, 34);
+  text("SHOPPING LIST", 34, 62);
 
   for (let i = 0; i < shoppingList.length; i++) {
-
     let item = shoppingList[i];
-    let y = 98 + i * 24;
+    let y = 94 + i * 24;
     let emoji = itemEmojiMap[item] || "❓";
+    let isDone = collected.includes(item);
 
-    if (collected.includes(item)) {
+    fill(isDone ? "#4c9a4c" : "#3f2e1f");
+    text(isDone ? "OK" : "-", 34, y);
 
-      fill("#4c9a4c");
-      text("OK " + emoji + " " + item.toUpperCase(), 34, y);
+    textSize(18);
+    text(emoji, 64, y - 2);
 
-    } else {
-
-      fill("#2f2a24");
-      text("- " + emoji + " " + item.toUpperCase(), 34, y);
-
-    }
+    textSize(10);
+    fill(isDone ? "#4c9a4c" : "#3f2e1f");
+    text(item.toUpperCase(), 88, y);
   }
 }
 
 function drawHintUI(hintsLeft) {
+  drawFixedPanel(width - 196, 18, 178, 58);
 
-  drawFixedPanel(width - 196, 18, 178, 64);
-
+  fill("#3f2e1f");
+  noStroke();
   textAlign(CENTER, CENTER);
-
-  fill("#2f2a24");
   textSize(11);
-
-  text("💡 HINT " + hintsLeft, width - 107, 49);
+  text("💡 HINT " + hintsLeft, width - 107, 46);
 }
 
 function drawCartUI(collected, itemEmojiMap) {
+  drawFixedPanel(width - 196, 88, 178, 112);
 
-  drawFixedPanel(width - 196, 95, 178, 104);
-
-  fill("#2f2a24");
+  fill("#3f2e1f");
   noStroke();
-
   textAlign(CENTER, TOP);
   textSize(10);
+  text("CART", width - 107, 104);
 
-  text("CART", width - 107, 112);
-
-  let emojis = collected.map((item) => itemEmojiMap[item] || "❓");
-
-  for (let i = 0; i < emojis.length; i++) {
-
+  for (let i = 0; i < collected.length; i++) {
+    let item = collected[i];
+    let emoji = itemEmojiMap[item] || "❓";
     let x = width - 164 + (i % 4) * 34;
-    let y = 145 + floor(i / 4) * 28;
+    let y = 140 + floor(i / 4) * 28;
 
-    fill("#dbc9a8");
-    rect(x - 12, y - 14, 24, 24);
-
-    fill("#2f2a24");
-    textSize(16);
-    text(emojis[i], x, y + 2);
+    textSize(20);
+    textAlign(CENTER, CENTER);
+    text(emoji, x, y);
   }
 }
 
 function drawFixedPanel(x, y, w, h) {
-
   noStroke();
 
-  fill("#2f2a24");
+  fill("#7a5a3a");
   rect(x, y, w, h);
 
   fill("#f6edd9");
-  rect(x + 6, y + 6, w - 12, h - 12);
+  rect(x + 4, y + 4, w - 8, h - 8);
 
-  fill("#ffffff33");
-  rect(x + 6, y + 6, w - 12, 6);
+  fill(255, 255, 255, 28);
+  rect(x + 4, y + 4, w - 8, 4);
 
-  fill("#00000012");
-  rect(x + 6, y + h - 14, w - 12, 8);
+  fill(0, 0, 0, 12);
+  rect(x + 4, y + h - 10, w - 8, 6);
 }
